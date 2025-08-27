@@ -142,7 +142,6 @@ export default function ChatPage() {
     });
 
     setAiTyping(true);
-
     try {
       const aiResponse = await generateAIResponse({ prompt: trimmedText });
       if (aiResponse.response) {
