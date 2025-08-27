@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { User } from "firebase/auth";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -11,15 +12,29 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { LogIn, LogOut } from "lucide-react";
+import { AuthForm } from "./auth-form";
 
 interface AuthButtonProps {
   user: User | null;
-  signIn: () => void;
+  signInWithGoogle: () => void;
+  signInWithEmail: (email: string, password: string) => Promise<boolean>;
+  signUpWithEmail: (email: string, password: string) => Promise<boolean>;
+  resetPassword: (email: string) => Promise<boolean>;
   signOut: () => void;
 }
 
-export function AuthButton({ user, signIn, signOut }: AuthButtonProps) {
+export function AuthButton({ 
+  user, 
+  signInWithGoogle, 
+  signInWithEmail,
+  signUpWithEmail,
+  resetPassword,
+  signOut 
+}: AuthButtonProps) {
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   if (user) {
     return (
       <DropdownMenu>
@@ -58,12 +73,29 @@ export function AuthButton({ user, signIn, signOut }: AuthButtonProps) {
   }
 
   return (
-    <Button
-      onClick={signIn}
-      className="shadow-glow-primary transition-all hover:shadow-lg hover:shadow-primary"
-    >
-      <LogIn className="mr-2 h-4 w-4" />
-      Sign in with Google
-    </Button>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <DialogTrigger asChild>
+        <Button
+          className="shadow-glow-primary transition-all hover:shadow-lg hover:shadow-primary"
+        >
+          <LogIn className="mr-2 h-4 w-4" />
+          Sign In
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle className="text-center text-2xl font-bold text-primary drop-shadow-[0_0_5px_hsl(var(--primary))]">
+            Welcome to Neon Chat
+          </DialogTitle>
+        </DialogHeader>
+        <AuthForm 
+          signInWithGoogle={signInWithGoogle} 
+          signInWithEmail={signInWithEmail}
+          signUpWithEmail={signUpWithEmail}
+          resetPassword={resetPassword}
+          closeDialog={() => setDialogOpen(false)}
+        />
+      </DialogContent>
+    </Dialog>
   );
 }

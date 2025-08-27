@@ -9,6 +9,9 @@ import {
   signInWithPopup,
   signOut as firebaseSignOut,
   type User,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import {
   getFirestore,
@@ -65,7 +68,7 @@ export default function ChatPage() {
     return () => unsubscribe();
   }, [db]);
 
-  const signIn = async () => {
+  const signInWithGoogle = async () => {
     if (!auth) return;
     const provider = new GoogleAuthProvider();
     try {
@@ -75,6 +78,43 @@ export default function ChatPage() {
       toast({ title: "Sign-in Error", description: "Could not sign in with Google.", variant: "destructive" });
     }
   };
+
+  const signUpWithEmail = async (email: string, password: string):Promise<boolean> => {
+    if (!auth) return false;
+    try {
+      await createUserWithEmailAndPassword(auth, email, password);
+      return true;
+    } catch (error: any) {
+      console.error("Error signing up with email", error);
+      toast({ title: "Sign-up Error", description: error.message || "Could not sign up.", variant: "destructive" });
+      return false;
+    }
+  };
+
+  const signInWithEmail = async (email: string, password: string):Promise<boolean> => {
+    if (!auth) return false;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      return true;
+    } catch (error: any) {
+      console.error("Error signing in with email", error);
+      toast({ title: "Sign-in Error", description: error.message || "Could not sign in.", variant: "destructive" });
+      return false;
+    }
+  };
+
+  const resetPassword = async (email: string):Promise<boolean> => {
+    if (!auth) return false;
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast({ title: "Password Reset", description: "Password reset email sent. Please check your inbox." });
+      return true;
+    } catch (error: any) {
+      console.error("Error sending password reset email", error);
+      toast({ title: "Password Reset Error", description: error.message || "Could not send password reset email.", variant: "destructive" });
+      return false;
+    }
+  }
 
   const signOut = async () => {
     if (!auth) return;
@@ -144,7 +184,10 @@ export default function ChatPage() {
     <div className="flex h-screen w-full flex-col bg-background">
       <Header
         user={user}
-        signIn={signIn}
+        signInWithGoogle={signInWithGoogle}
+        signInWithEmail={signInWithEmail}
+        signUpWithEmail={signUpWithEmail}
+        resetPassword={resetPassword}
         signOut={signOut}
         theme={theme}
         toggleTheme={toggleTheme}
