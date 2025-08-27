@@ -8,9 +8,10 @@ import { SendIcon } from "@/components/icons";
 interface MessageInputProps {
   onSendMessage: (text: string) => void;
   disabled: boolean;
+  placeholder?: string;
 }
 
-export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
+export function MessageInput({ onSendMessage, disabled, placeholder }: MessageInputProps) {
   const [inputValue, setInputValue] = useState("");
 
   const handleSubmit = (e: FormEvent) => {
@@ -26,7 +27,7 @@ export function MessageInput({ onSendMessage, disabled }: MessageInputProps) {
       <form onSubmit={handleSubmit} className="flex items-center gap-2">
         <Input
           type="text"
-          placeholder={disabled ? "Sign in to chat" : "Type a message..."}
+          placeholder={disabled && !placeholder ? "Sign in to chat" : placeholder || "Type a message..."}
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           disabled={disabled}

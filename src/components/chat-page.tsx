@@ -39,6 +39,7 @@ export default function ChatPage() {
   const [user, setUser] = useState<User | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const [aiTyping, setAiTyping] = useState(false);
 
   const auth = isFirebaseConfigured ? getAuth() : null;
   const db = isFirebaseConfigured ? getFirestore() : null;
@@ -140,27 +141,28 @@ export default function ChatPage() {
       createdAt: serverTimestamp(),
     });
 
-    if (trimmedText.startsWith("/ai ")) {
-      const prompt = trimmedText.substring(4);
-      try {
-        const aiResponse = await generateAIResponse({ prompt });
-        if (aiResponse.response) {
-          await addDoc(collection(db, "messages"), {
-            text: aiResponse.response,
-            uid: "ai-bot",
-            displayName: "Neon AI",
-            photoURL: botAvatar,
-            createdAt: serverTimestamp(),
-          });
-        }
-      } catch (error) {
-        console.error("Error generating AI response:", error);
-        toast({
-          title: "AI Error",
-          description: "Could not generate a response.",
-          variant: "destructive",
+    setAiTyping(true);
+
+    try {
+      const aiResponse = await generateAIResponse({ prompt: trimmedText });
+      if (aiResponse.response) {
+        await addDoc(collection(db, "messages"), {
+          text: aiResponse.response,
+          uid: "ai-bot",
+          displayName: "Neon AI",
+          photoURL: botAvatar,
+          createdAt: serverTimestamp(),
         });
       }
+    } catch (error) {
+      console.error("Error generating AI response:", error);
+      toast({
+        title: "AI Error",
+        description: "Could not generate a response.",
+        variant: "destructive",
+      });
+    } finally {
+      setAiTyping(false);
     }
   };
 
@@ -173,7 +175,7 @@ export default function ChatPage() {
             To use Neon Chat AI, you need to set up Firebase.
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            Please copy <code className="font-mono">.env.local.example</code> to <code className="font-mono">.env.local</code> and fill in your Firebase project credentials.
+            Please ask the assistant to set up Firebase for you.
           </p>
         </div>
       </div>
@@ -195,7 +197,8 @@ export default function ChatPage() {
       <MessageList messages={messages} currentUserUid={user?.uid} />
       <MessageInput
         onSendMessage={handleSendMessage}
-        disabled={!user || loading}
+        disabled={!user || loading || aiTyping}
+        placeholder={aiTyping ? "AI is typing..." : "Type a message..."}
       />
     </div>
   );
