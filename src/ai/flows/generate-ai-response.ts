@@ -29,7 +29,11 @@ const generateAIResponsePrompt = ai.definePrompt({
   name: 'generateAIResponsePrompt',
   input: {schema: GenerateAIResponseInputSchema},
   output: {schema: GenerateAIResponseOutputSchema},
-  prompt: `You are a helpful AI assistant. Please respond to the following prompt: {{{prompt}}}`,
+  prompt: `You are a helpful and friendly AI assistant called Neon AI. Your purpose is to have a conversation with the user.
+
+Respond to the user's prompt in a conversational and helpful manner.
+
+User's prompt: {{{prompt}}}`,
 });
 
 const generateAIResponseFlow = ai.defineFlow(
